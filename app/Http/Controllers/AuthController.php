@@ -13,10 +13,11 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+            $token = Auth::user()->createToken('authToken')->plainTextToken;
 
             return response()->json([
                 'message' => 'Login successful',
-                'user' => Auth::user(),
+                'token' => $token,
             ]);
         }
 

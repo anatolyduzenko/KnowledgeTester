@@ -3,11 +3,12 @@ import { createI18n } from "vue-i18n";
 const messages = {
   en: {
     login: "Login",
+    logout: "Logout",
     email: "Email",
     password: "Password",
     submit: "Submit",
     quiz: "Quiz",
-    welcome: "Welcome to the PHP Knowledge Quiz!",
+    welcome: "Welcome to the Knowledge Quiz!",
     question: "Question",
     answer_placeholder: "Type your answer here...",
     total_score: "Total Score",
@@ -15,11 +16,12 @@ const messages = {
   },
   ru: {
     login: "Войти",
+    logout: "Выйти",
     email: "Электронная почта",
     password: "Пароль",
     submit: "Отправить",
-    quiz: "Викторина",
-    welcome: "Добро пожаловать в викторину знаний PHP!",
+    quiz: "Квиииз",
+    welcome: "Добро пожаловать в викторину знаний!",
     question: "Вопрос",
     answer_placeholder: "Введите ваш ответ здесь...",
     total_score: "Общий счет",
@@ -28,6 +30,7 @@ const messages = {
 };
 
 const i18n = createI18n({
+  legacy: false,
   locale: "en",
   messages,
 });

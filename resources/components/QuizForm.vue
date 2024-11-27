@@ -25,7 +25,7 @@
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="text-center">Loading questions...</div>
+      <div v-if="loading" class="text-center">{{ $t("loading") }}</div>
 
       <!-- Results -->
       <div v-if="showResults" class="mt-6">
@@ -36,7 +36,7 @@
             :key="result.question_id"
             class="mb-4 p-4 border rounded-lg"
           >
-            <strong>Q{{ result.question_id }}:</strong> {{ result.score }}/10
+            <strong>Q{{ result.question_id }}:</strong> {{ result.score }} / 10
             <p>{{ result.feedback }}</p>
           </li>
         </ul>
@@ -68,6 +68,7 @@ export default {
   },
   methods: {
     async fetchQuestions() {
+      this.loading = true;
       try {
         const response = await axios.get("/api/questions", {
           headers: { 
@@ -117,6 +118,10 @@ export default {
   },
   mounted() {
     this.fetchQuestions();
+    document.addEventListener("reload-questions", this.fetchQuestions);
+  },
+  beforeUnmount() {
+    document.removeEventListener("reload-questions", this.fetchQuestions);
   },
 };
 </script>

@@ -9,7 +9,7 @@ import LoginForm from "../components/LoginForm.vue";
 import QuizForm from "../components/QuizForm.vue";
 
 const routes = [
-  { path: "/login", component: LoginForm },
+  { path: "/login", component: LoginForm, name: "login" },
   {
     path: "/quiz",
     component: QuizForm,
