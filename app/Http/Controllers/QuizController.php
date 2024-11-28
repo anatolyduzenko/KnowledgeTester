@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Question;
 use App\Models\UserResult;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use OpenAI;
 
 class QuizController extends Controller
@@ -70,18 +71,21 @@ class QuizController extends Controller
                 'question_id' => $question->id,
                 'score' => $score,
                 'feedback' => $feedback,
+                'user_answer' => $userAnswer,
             ];
             
-            UserResult::create([
-                'user_id' => auth()->id(),
-                'question_id' => $question->id,
-                'user_answer' => $userAnswer,
-                'score' => $score,
-                'feedback' => $feedback,
-            ]);
-
             $totalScore += $score;
         }
+
+        $last = UserResult::latest('created_at')->first();
+
+        UserResult::create([
+            'user_id' => auth()->id(),
+            'attempt_id' => $last ?? 0,
+            'user_answer' => '',
+            'score' => $totalScore,
+            'feedback' => json_encode($results),
+        ]);
 
         return response()->json([
             'details' => $results,

@@ -5,14 +5,14 @@
       <select
         v-model="$i18n.locale"
         @change="changeLanguage"
-        class="bg-white border border-gray-300 rounded-md shadow-sm py-2 px-6 focus:outline-none focus:ring focus:ring-blue-200 text-gray-700"
+        class="bg-white border border-gray-300 rounded-md shadow-sm py-2 px-8 focus:outline-none focus:ring focus:ring-blue-200 text-gray-700"
       >
         <option value="en">English</option>
         <option value="ru">Русский</option>
       </select>
-      <button
+      <button v-if="isLoggedIn"
           @click="logout"
-          class="bg-red-600 text-white py-2 px-4 mx-4 rounded-lg hover:bg-red-700 focus:ring focus:ring-red-300">
+          class="bg-red-600 text-white py-2 px-4 mx-6 rounded-lg hover:bg-red-700 focus:ring focus:ring-red-300">
           {{ $t("logout") }}
         </button>
     </div>
@@ -29,6 +29,11 @@
     import axios from "axios";
 
     export default {
+        data() {
+            return {
+                isLoggedIn: false,
+            };
+        },
         setup() {
             const currentLocale = ref(localStorage.getItem("locale") || "en");
 
@@ -62,6 +67,7 @@
         mounted() {
             this.$i18n.locale = this.currentLocale;
             localStorage.setItem('locale', this.currentLocale); 
+            this.isLoggedIn = !!localStorage.getItem('authToken');
         },
     };
 </script>

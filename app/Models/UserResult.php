@@ -9,5 +9,5 @@ class UserResult extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'question_id', 'user_answer', 'score', 'feedback'];
+    protected $fillable = ['user_id', 'attempt_id', 'user_answer', 'score', 'feedback'];
 }

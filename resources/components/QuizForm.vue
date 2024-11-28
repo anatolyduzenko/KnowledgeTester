@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-100 flex items-center justify-center">
     <div class="w-full max-w-4xl bg-white p-6 rounded-lg shadow-lg">
       <h1 class="text-2xl font-semibold text-center mb-6">{{ $t("quiz") }}</h1>
-
+      <hr/>
       <!-- Questions -->
       <div v-if="!loading && questions.length && !showResults">
         <div v-for="(question, index) in questions" :key="question.id" class="mb-6">

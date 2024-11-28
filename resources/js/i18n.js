@@ -13,6 +13,7 @@ const messages = {
     answer_placeholder: "Type your answer here...",
     total_score: "Total Score",
     next_question: "Next Question",
+    loading: "Loading...",
   },
   ru: {
     login: "Войти",
@@ -20,12 +21,13 @@ const messages = {
     email: "Электронная почта",
     password: "Пароль",
     submit: "Отправить",
-    quiz: "Квиииз",
+    quiz: "Квиз",
     welcome: "Добро пожаловать в викторину знаний!",
     question: "Вопрос",
     answer_placeholder: "Введите ваш ответ здесь...",
     total_score: "Общий счет",
     next_question: "Следующий вопрос",
+    loading: "Загрузка...",
   },
 };
 
