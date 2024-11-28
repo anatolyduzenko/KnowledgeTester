@@ -3,6 +3,7 @@
     <div class="w-full max-w-4xl bg-white p-6 rounded-lg shadow-lg">
       <h1 class="text-2xl font-semibold text-center mb-6">{{ $t("quiz") }}</h1>
       <hr/>
+      <br/>
       <!-- Questions -->
       <div v-if="!loading && questions.length && !showResults">
         <div v-for="(question, index) in questions" :key="question.id" class="mb-6">
@@ -29,15 +30,16 @@
 
       <!-- Results -->
       <div v-if="showResults" class="mt-6">
-        <h2 class="text-xl font-semibold text-green-600">{{ $t("total_score") }}: {{ totalScore }}</h2>
+        <h2 class="text-xl font-semibold text-green-600">{{ $t("total_score") }}: {{ totalScore }} / 100 </h2>
         <ul class="mt-4">
           <li
             v-for="result in results"
             :key="result.question_id"
             class="mb-4 p-4 border rounded-lg"
           >
-            <strong>Q{{ result.question_id }}:</strong> {{ result.score }} / 10
-            <p>{{ result.feedback }}</p>
+            <strong>Q{{ result.question_id }}: {{ result.question }}</strong> {{ result.score }} / 10
+            <p class="border-solid border-t border-b my-4">{{ result.feedback }}</p>
+            <p v-html="result.correct_answer"></p>
           </li>
         </ul>
         <button

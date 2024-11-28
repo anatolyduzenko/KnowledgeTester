@@ -41,12 +41,12 @@ class QuizController extends Controller
                 continue;
             }
 
-            $userAnswer = $response['user_answer'];
+            $user_answer = $response['user_answer'];
 
-            $prompt = "Question: {$question->question}\nUser Answer: {$userAnswer}\nCorrect Answer: {$question->correct_answer}\nEvaluate the answer and provide a score and feedback. Use this locale for answers: {$locale}.";
+            $prompt = "Question: {$question->question}\nUser Answer: {$user_answer}\nCorrect Answer: {$question->correct_answer}\nEvaluate the answer and provide a score and feedback. Use this locale for answers: {$locale}. Do not translate 'score'.";
 
             $response = $this->client->chat()->create([
-                'model' => 'gpt-4-turbo',
+                'model' => 'gpt-4o-mini',
                 'messages' => [
                     [
                         'role' => 'system',
@@ -57,31 +57,33 @@ class QuizController extends Controller
                         'content' => $prompt,
                     ],
                 ],
-                'max_tokens' => 150,
+                'max_tokens' => 250,
             ]);
 
             $evaluation = $response['choices'][0]['message']['content'];
 
-            preg_match('/Score: (\d+)\/10/', $evaluation, $scoreMatch);
-            $score = $scoreMatch[1] ?? 0;
+            preg_match('/(S|s)core: (\d+)(\/10|)/', $evaluation, $scoreMatch);
+            $score = $scoreMatch[2] ?? 0;
 
-            $feedback = trim(str_replace("Score: $score/10", '', $evaluation));
+            $feedback = trim(preg_replace('/(S|s)core: (\d+)(\/10|)/', '', $evaluation));
 
             $results[] = [
                 'question_id' => $question->id,
+                'question' => $question->question,
                 'score' => $score,
                 'feedback' => $feedback,
-                'user_answer' => $userAnswer,
+                'user_answer' => $user_answer,
+                'correct_answer' => $question->correct_answer,
             ];
             
             $totalScore += $score;
         }
 
-        $last = UserResult::latest('created_at')->first();
+        $last = UserResult::latest('created_at')->first()->attempt_id;
 
         UserResult::create([
             'user_id' => auth()->id(),
-            'attempt_id' => $last ?? 0,
+            'attempt_id' => $last+1 ?? 0,
             'user_answer' => '',
             'score' => $totalScore,
             'feedback' => json_encode($results),
