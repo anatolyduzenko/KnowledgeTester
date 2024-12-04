@@ -5,10 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Question;
 use App\Models\UserResult;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use OpenAI;
-
-use function Termwind\parse;
 
 class QuizController extends Controller
 {
@@ -21,17 +18,17 @@ class QuizController extends Controller
 
     public function getQuestions(Request $request)
     {
-        $locale = $request->header('Accept-Language', 'en'); 
-        $theme = $request->input('theme', ''); 
+        $locale = $request->header('Accept-Language', 'en');
+        $theme = $request->input('theme', '');
         $questions = Question::where('locale', $locale)
             ->where('theme', $theme)
             ->inRandomOrder()
-            ->take((env('USE_AI_FOR_QUESTIONS'))?5:10)
+            ->take((env('USE_AI_FOR_QUESTIONS')) ? 5 : 10)
             ->get();
-        
-            if(count($questions) < 10 && env('USE_AI_FOR_QUESTIONS') && $theme !== '') {
-            $exclude_questions = "";
-            foreach($questions as $question) {
+
+        if (count($questions) < 10 && env('USE_AI_FOR_QUESTIONS') && $theme !== '') {
+            $exclude_questions = '';
+            foreach ($questions as $question) {
                 $exclude_questions .= $question->question."\n";
             }
             $response = $this->client->chat()->create([
@@ -39,22 +36,22 @@ class QuizController extends Controller
                 'messages' => [
                     [
                         'role' => 'system',
-                        'content' => "You are an assistant that evaluates answers to technical questions. Use this locale for answers: {$locale}."
+                        'content' => "You are an assistant that evaluates answers to technical questions. Use this locale for answers: {$locale}.",
                     ],
                     [
                         'role' => 'user',
-                        'content' => "Generate ".(10 - count($questions))." questions with answers for ".$request->theme." interview in JSON response. Like Question:..., Answer:... Exclude these questions:".$exclude_questions
+                        'content' => 'Generate '.(10 - count($questions)).' questions with answers for '.$request->theme.' interview in JSON response. Like Question:..., Answer:... Exclude these questions:'.$exclude_questions,
                     ],
                 ],
                 'response_format' => [
-                    "type" => "json_object",
-                ]
+                    'type' => 'json_object',
+                ],
                 // 'max_tokens' => 250,
             ]);
 
             $questions_new = json_decode($response['choices'][0]['message']['content']);
-            if(isset($questions_new->interview_questions)) {
-                foreach($questions_new->interview_questions as $new_question) {
+            if (isset($questions_new->interview_questions)) {
+                foreach ($questions_new->interview_questions as $new_question) {
                     $new_record = new Question;
                     $new_record->question = $new_question->Question;
                     $new_record->correct_answer = $new_question->Answer;
@@ -66,20 +63,19 @@ class QuizController extends Controller
             }
         }
 
-
         return response()->json($questions);
     }
 
     public function evaluateAnswer(Request $request)
     {
-        $locale = $request->header('Accept-Language', 'en'); 
-        $responses = $request->input('responses'); 
+        $locale = $request->header('Accept-Language', 'en');
+        $responses = $request->input('responses');
         $totalScore = 0;
         $results = [];
 
         foreach ($responses as $response) {
             $question = Question::find($response['question_id']);
-            if (!$question) {
+            if (! $question) {
                 continue;
             }
 
@@ -92,7 +88,7 @@ class QuizController extends Controller
                 'messages' => [
                     [
                         'role' => 'system',
-                        'content' => "You are an assistant that evaluates answers to technical questions. Provide a score from 0 to 10 based on accuracy and relevance, followed by feedback."
+                        'content' => 'You are an assistant that evaluates answers to technical questions. Provide a score from 0 to 10 based on accuracy and relevance, followed by feedback.',
                     ],
                     [
                         'role' => 'user',
@@ -117,7 +113,7 @@ class QuizController extends Controller
                 'user_answer' => $user_answer,
                 'correct_answer' => $question->correct_answer,
             ];
-            
+
             $totalScore += $score;
         }
 
@@ -125,7 +121,7 @@ class QuizController extends Controller
 
         UserResult::create([
             'user_id' => auth()->id(),
-            'attempt_id' => $last+1 ?? 0,
+            'attempt_id' => $last + 1 ?? 0,
             'user_answer' => '',
             'score' => $totalScore,
             'feedback' => json_encode($results),

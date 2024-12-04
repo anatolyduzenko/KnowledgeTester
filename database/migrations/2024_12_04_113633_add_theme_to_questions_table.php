@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('questions', function (Blueprint $table) {
-            $table->string('theme')->nullable()->after('locale'); 
+            $table->string('theme')->nullable()->after('locale');
         });
     }
 
