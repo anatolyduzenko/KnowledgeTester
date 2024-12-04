@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use OpenAI;
 
+use function Termwind\parse;
+
 class QuizController extends Controller
 {
     protected $client;
@@ -20,10 +22,50 @@ class QuizController extends Controller
     public function getQuestions(Request $request)
     {
         $locale = $request->header('Accept-Language', 'en'); 
+        $theme = $request->input('theme', ''); 
         $questions = Question::where('locale', $locale)
+            ->where('theme', $theme)
             ->inRandomOrder()
-            ->take(10)
+            ->take((env('USE_AI_FOR_QUESTIONS'))?5:10)
             ->get();
+        
+            if(count($questions) < 10 && env('USE_AI_FOR_QUESTIONS') && $theme !== '') {
+            $exclude_questions = "";
+            foreach($questions as $question) {
+                $exclude_questions .= $question->question."\n";
+            }
+            $response = $this->client->chat()->create([
+                'model' => 'gpt-4o-mini',
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => "You are an assistant that evaluates answers to technical questions. Use this locale for answers: {$locale}."
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => "Generate ".(10 - count($questions))." questions with answers for ".$request->theme." interview in JSON response. Like Question:..., Answer:... Exclude these questions:".$exclude_questions
+                    ],
+                ],
+                'response_format' => [
+                    "type" => "json_object",
+                ]
+                // 'max_tokens' => 250,
+            ]);
+
+            $questions_new = json_decode($response['choices'][0]['message']['content']);
+            if(isset($questions_new->interview_questions)) {
+                foreach($questions_new->interview_questions as $new_question) {
+                    $new_record = new Question;
+                    $new_record->question = $new_question->Question;
+                    $new_record->correct_answer = $new_question->Answer;
+                    $new_record->theme = $request->theme;
+                    $new_record->locale = $locale;
+                    $new_record->save();
+                    $questions[] = $new_record;
+                }
+            }
+        }
+
 
         return response()->json($questions);
     }

@@ -2,8 +2,8 @@
   <div class="min-h-screen bg-gray-100 flex items-center justify-center">
     <div class="w-full max-w-4xl bg-white p-6 rounded-lg shadow-lg">
       <h1 class="text-2xl font-semibold text-center mb-6">{{ $t("quiz") }}</h1>
-      <hr/>
-      <br/>
+      
+      <ThemeSelect @update-data="updateQuestionsData"/>
       <!-- Questions -->
       <div v-if="!loading && questions.length && !showResults">
         <div v-for="(question, index) in questions" :key="question.id" class="mb-6">
@@ -55,8 +55,10 @@
 
 <script>
 import axios from "axios";
+import ThemeSelect from './ThemeSelect.vue';
 
 export default {
+  components: { ThemeSelect },
   data() {
     return {
       questions: [],
@@ -69,22 +71,6 @@ export default {
     };
   },
   methods: {
-    async fetchQuestions() {
-      this.loading = true;
-      try {
-        const response = await axios.get("/api/questions", {
-          headers: { 
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            "Accept-Language": this.$i18n.locale,
-          }
-        });
-        this.questions = response.data;
-      } catch (error) {
-        console.error("Error fetching questions", error);
-      } finally {
-        this.loading = false;
-      }
-    },
     async submitQuiz() {
       try {
         this.loading = true;
@@ -110,20 +96,34 @@ export default {
         this.loading = false;
       }
     },
+    updateQuestionsData(data) {
+        if(data.length > 0) {
+          this.loading = false;
+          this.questions = data;
+        } else {
+          this.loading = true;
+        }
+    },
     restartQuiz() {
       this.answers = {};
       this.results = [];
       this.totalScore = 0;
       this.showResults = false;
-      this.fetchQuestions(); // Reload questions
+      this.fetchQuestionsData();
     },
+    loadingData() {
+      this.loading = true;
+      this.answers = {};
+      this.results = [];
+      this.totalScore = 0;
+      this.showResults = false;
+    }
   },
   mounted() {
-    this.fetchQuestions();
-    document.addEventListener("reload-questions", this.fetchQuestions);
+    document.addEventListener("reload-questions", this.loadingData);
   },
   beforeUnmount() {
-    document.removeEventListener("reload-questions", this.fetchQuestions);
+    document.removeEventListener("reload-questions", this.loadingData);
   },
 };
 </script>
