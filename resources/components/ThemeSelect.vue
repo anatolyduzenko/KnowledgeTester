@@ -37,6 +37,7 @@ export default {
         return {
             selectedTheme: '', 
             questions: [],
+            answers: {},
         };
     },
     methods: {
@@ -50,14 +51,17 @@ export default {
                 }
                 });
                 this.questions = response.data;
-                this.$emit('update-data', this.questions);
+                this.questions.forEach((question, index) => {
+                    this.answers[question.id] = [];
+                });
+                this.$emit('update-data', [this.questions, this.answers]);
             } catch (error) {
                 console.error("Error fetching questions", error);
             }
        },
     },
     mounted() {
-        this.fetchQuestionsData(); 
+        //this.fetchQuestionsData(); 
         document.addEventListener("reload-questions", this.fetchQuestionsData);
     },
     beforeUnmount() {

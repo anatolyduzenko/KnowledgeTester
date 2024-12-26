@@ -9,5 +9,5 @@ class Question extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['question', 'correct_answer', 'locale'];
+    protected $fillable = ['question', 'correct_answer', 'locale', 'options', 'correct_option'];
 }

@@ -6,16 +6,28 @@
       <ThemeSelect @update-data="updateQuestionsData"/>
       <!-- Questions -->
       <div v-if="!loading && questions.length && !showResults">
-        <div v-for="(question, index) in questions" :key="question.id" class="mb-6">
+        <div v-for="(question, index) in questions" :key="index" class="mb-6">
           <p class="font-medium">
             {{ index + 1 }}. {{ question.question }}
           </p>
-          <textarea
-            v-model="answers[question.id]"
-            class="mt-2 w-full p-2 border rounded-lg focus:ring focus:ring-blue-200"
-            rows="3"
-            :placeholder="$t('answer_placeholder')"
-          ></textarea>
+          <p v-if="JSON.parse(question.correct_option).length > 1" class="text-sm text-gray-500 mb-2">
+              {{ $t('multiple_choices') }}
+          </p>
+          <hr/>
+          <div v-for="(option, key) in JSON.parse(question.options)" :key="key" class="mb-2">
+            <div class="flex items-center">
+              <input
+                  type="checkbox"
+                  :id="'question-' + question.id + '-' + key"
+                  :value="key"
+                  v-model="answers[question.id]"
+                  class="mr-2"
+              />
+              <label :for="'question-' + question.id + '-' + key" class="cursor-pointer">
+                  {{ key }}. {{ option }}
+              </label>
+            </div>
+          </div>
         </div>
         <button
           @click="submitQuiz"
@@ -37,9 +49,16 @@
             :key="result.question_id"
             class="mb-4 p-4 border rounded-lg"
           >
-            <strong>Q{{ result.question_id }}: {{ result.question }}</strong> {{ result.score }} / 10
+            <strong>Q {{ result.question_id }}: {{ result.question }}</strong> {{ result.score }} / 10
             <p class="border-solid border-t border-b my-4">{{ result.feedback }}</p>
-            <p v-html="result.correct_answer"></p>
+            <div v-if="result.user_answer.length > 0" class="border-solid border-b my-4">
+              <h4 class="font-medium flex justify-between items-center">{{ $t('provided_answers') }}</h4>
+              <p v-html="result.user_answer"></p>
+            </div>
+            <CorrectAnswers 
+              :answers="result.correct_answers" 
+              title="Correct Answers"
+            />
           </li>
         </ul>
         <button
@@ -56,9 +75,10 @@
 <script>
 import axios from "axios";
 import ThemeSelect from './ThemeSelect.vue';
+import CorrectAnswers from "./CorrectAnswers.vue";
 
 export default {
-  components: { ThemeSelect },
+  components: { ThemeSelect, CorrectAnswers },
   data() {
     return {
       questions: [],
@@ -99,21 +119,21 @@ export default {
     updateQuestionsData(data) {
         if(data.length > 0) {
           this.loading = false;
-          this.questions = data;
+          this.questions = data[0];
+          console.log(data);
+          this.answers = data[1];
         } else {
           this.loading = true;
         }
     },
     restartQuiz() {
-      this.answers = {};
       this.results = [];
       this.totalScore = 0;
       this.showResults = false;
-      this.fetchQuestionsData();
+      this.$emit('reload-questions', [this.questions, this.answers]);
     },
     loadingData() {
       this.loading = true;
-      this.answers = {};
       this.results = [];
       this.totalScore = 0;
       this.showResults = false;

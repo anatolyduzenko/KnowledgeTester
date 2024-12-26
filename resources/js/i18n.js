@@ -26,6 +26,9 @@ const messages = {
     python_django: "Python, Django",
     networks: "Networks",
     testing_debugging: "Testing, Debugging",
+    multiple_choices: "Select all that apply",
+    correct_answers: "Correct Answers:",
+    provided_answers: "Provided Answers:",
   },
   ru: {
     login: "Войти",
@@ -52,6 +55,9 @@ const messages = {
     security: "Безопасность",
     web_technologies: "Web технологии",
     testing_debugging: "Тестирование, Отладка",
+    multiple_choices: "Выберите все подходящие",
+    correct_answers: "Правильные ответы:",
+    provided_answers: "Ответы пользователя:",
   },
 };
 
